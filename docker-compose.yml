@@ -1,1 +1,61 @@
 services:
+  nginx:
+    build: ./nginx
+    volumes:
+      - static_volume:/app/staticfiles
+    ports:
+      - "8080:8080"
+    depends_on:
+      - backend
+    networks:
+      - frontend
+
+  postgres:
+    container_name: DB
+    image: postgres:18
+    shm_size: 256mb
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
+    ports:
+      - 5432:5432
+    networks:
+      - django_postgres
+
+
+  backend:
+    container_name: BACKEND
+    build:
+      context: backend/.
+      no_cache: true
+    expose:
+      - "8000"
+    depends_on:
+      - postgres
+    environment:
+      DJANGO_KEY: ${DJANGO_KEY}
+      DJANGO_SUPERUSER_PASSWORD: ${DJANGO_SUPERUSER_PASSWORD}
+      DATABASE_ENGINE: ${DATABASE_ENGINE}
+      DATABASE_USERNAME: ${DATABASE_USERNAME}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      DATABASE_HOST: ${DATABASE_PASSWORD}
+      DATABASE_PORT: ${DATABASE_PORT}
+    env_file:
+      - .env
+    volumes:
+      - static_volume:/app/staticfiles
+    networks:
+      - django_postgres
+      - frontend
+
+volumes:
+  static_volume:
+
+networks:
+  django_postgres:
+    driver: bridge
+  frontend:
+    driver: bridge
