@@ -1,0 +1,30 @@
+[
+  {
+    "model": "contacts.ContactStatusChoices",
+    "fields": {
+      "id": 1,
+      "name": "new"
+    }
+  },
+  {
+    "model": "contacts.ContactStatusChoices",
+    "fields": {
+      "id": 2,
+      "name": "lost"
+    }
+  },
+  {
+    "model": "contacts.ContactStatusChoices",
+    "fields": {
+      "id": 3,
+      "name": "active"
+    }
+  },
+  {
+    "model": "contacts.ContactStatusChoices",
+    "fields": {
+      "id": 4,
+      "name": "not active"
+    }
+  }
+]
