@@ -1,5 +1,4 @@
 from typing import Any
-
 from django.contrib.auth.models import User
 from django.db import models
 import requests
@@ -33,6 +32,10 @@ class ContactStatusChoices(models.Model):
         return self.name
 
     def natural_key(self):
+        """
+            Helping function for getting the name of a contact status object
+            :return: None
+        """
         return {
             "name": self.name,
         }
@@ -67,6 +70,15 @@ class CityLocationWeather(models.Model):
         return self.name
 
     def natural_key(self):
+        """
+            Helping function which helps with getting city name and weather conditions.
+            Additionally, updating weather conditions if needed
+            :return: Dictionary with city name and weather conditions
+            :rtype: Dict[str, str]
+        """
+
+        if datetime.now(tz=dt.timezone.utc) - self.last_updated > timedelta(hours=1):
+            self.temperature, self.humidity, self.wind_speed = self._get_weather()
         return {
             "name": self.name,
             "temperature": self.temperature,
@@ -75,6 +87,11 @@ class CityLocationWeather(models.Model):
         }
 
     def _get_coordinates(self) -> (float, float):
+        """
+            Get latitude and longitude coordinates from Nominatim API
+            :return: Returns latitude and longitude coordinates
+            :rtype: float, float
+        """
         query = {
             "q": self.name,
             "format": "json",
@@ -88,6 +105,11 @@ class CityLocationWeather(models.Model):
         return float(response["lat"]), float(response["lon"])
 
     def _get_weather(self) -> (float, float, float):
+        """
+            Private method to get weather conditions from OpenMeteo API. Code taken from OpenMeteo page.
+        :return: Returns weather conditions from OpenMeteo API like temperature, humidity, wind_speed
+        :rtype: float, float, float
+        """
         cache_session = requests_cache.CachedSession('.cache', expire_after=3600)
         retry_session = retry(cache_session, retries=5, backoff_factor=0.2)
         openmeteo = openmeteo_requests.Client(session=retry_session)
@@ -102,15 +124,21 @@ class CityLocationWeather(models.Model):
         responses = openmeteo.weather_api(url, params=params)
         response = responses[0]
         current = response.Current()
-        return current.Variables(0).Value(), current.Variables(1).Value(), current.Variables(2).Value()
+        return round(current.Variables(0).Value(),2), round(current.Variables(1).Value(),2), round(current.Variables(2).Value(),2)
 
     def save(self, **kwargs):
+        """
+            Get weather data and save it to database
+            :param kwargs: Objects attributes
+            :type kwargs:
+            :return: None
+            :rtype:
+        """
         try:
             if self not in list(CityLocationWeather.objects.all()):
                 self.latitude, self.longitude = self._get_coordinates()
                 self.temperature, self.humidity, self.wind_speed = self._get_weather()
             else:
-                print(datetime.now(dt.UTC) - self.last_updated > timedelta(hours=1))
                 if datetime.now(dt.UTC) - self.last_updated > timedelta(hours=1):
                     self.temperature, self.humidity, self.wind_speed = self._get_weather()
             super().save(**kwargs)
@@ -133,6 +161,7 @@ class Contact(models.Model):
     :param add_date: Contact add date
 
     :return: Contact object
+    :rtype: Contact
     """
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100)
@@ -153,6 +182,13 @@ class Contact(models.Model):
         return self.name + " " + self.surname
 
     def update_contact(self, update_data):
+        """
+        Method for updating a contact
+        :param update_data: Dictionary of changed contact data
+        :type update_data: Dict[str, str]
+        :return: None
+        :rtype: None
+        """
         self.name = update_data.get("name")
         self.surname = update_data.get("surname")
         self.phone = update_data.get("phone")

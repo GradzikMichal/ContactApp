@@ -1,4 +1,14 @@
 <script>
+    import  { UppyContextProvider, Dropzone, FilesList, UploadButton } from '@uppy/svelte';
+    import Uppy from '@uppy/core';
+    import XHR from '@uppy/xhr-upload'
+    import Dashboard from '@uppy/dashboard'
+
+    import '@uppy/core/css/style.min.css';
+    import '@uppy/dashboard/css/style.min.css';
+
+    let uppy = $state(new Uppy());
+
     let contact_info = $state({
         id:0,
         name: "",
@@ -15,21 +25,59 @@
     let contacts = $state([])
 
     document.addEventListener("DOMContentLoaded", () => {
+
         const contact_form = document.getElementById("contactForm")
         contact_form.addEventListener("submit", handleContactSubmit)
         const edit_contact_form = document.getElementById("editContactForm")
         edit_contact_form.addEventListener("submit", handleContactEdit)
     })
 
+    async function handleXhrResponse() {
+
+    }
+
+    function setupUppy(){
+        uppy = new Uppy().use(Dashboard, {inline: true, target:"#uploader"})
+            .use(XHR, {
+                endpoint: "http://localhost:8080/api/contacts/upload/",
+                headers: {
+                    'Accept': 'text/csv',
+                    'Content-Type': 'text/csv',
+                    "Mode": 'cors',
+                    "Credentials": 'same-origin',
+                    "X-CSRFToken": csrf
+                },
+                allowedMetaFields:false,
+                formData: false,
+                responseType: "json",
+
+            });
+        uppy.on('upload-success',(file, response) =>{
+            contacts = JSON.parse(response.body["contacts"])
+        })
+        uppy.on('upload-error',(response) =>{
+            document.getElementById("infoMessage").innerHTML = JSON.parse(response.body["message"]);
+            document.getElementById("infoModal").showModal();
+
+        })
+    }
+
+
     async function getContacts(){
         try{
             let response =  await fetch("http://localhost:8080/api/contacts/",
                 {
                     method: "GET",
-                }).then(response => response.json())
+                })
+            if (response.status === 200 && response.redirected){
+                window.location.assign(response.url)
+            }
+            response = await response.json();
             csrf = response["csrf"]
             contact_statuses = response["contact_statuses"]
             contacts = JSON.parse(response["contacts"])
+            // Because of csrf token this needs to be here (sadly)
+            setupUppy();
         }catch(err){
             document.getElementById("infoMessage").innerHTML = err;
             document.getElementById("infoModal").showModal();
@@ -77,8 +125,10 @@
                     },
                     body: JSON.stringify(contact_info),
                 }).then(response => response.json())
-
-                contacts = JSON.parse(response)
+            if (response.status === 200 && response.redirected){
+                window.location.assign(response.url)
+            }
+            contacts = JSON.parse(response)
 
         }catch (err){
             document.getElementById("infoMessage").innerHTML = err
@@ -126,6 +176,9 @@
                     },
                     body: JSON.stringify(contact_info),
                 }).then(response => response.json())
+            if (response.status === 200 && response.redirected){
+                window.location.assign(response.url)
+            }
             document.getElementById("infoMessage").innerHTML = response.message
             document.getElementById("infoModal").showModal();
         }catch (err){
@@ -166,7 +219,7 @@
     async function deleteContact() {
         document.getElementsByClassName("loading")[0].classList.remove("hidden")
         try {
-            let response = await fetch("http://localhost:8080/api/contacts/"+contact_info.id+"/",
+            let response = await fetch("http://localhost:8080/api/contacts/" + contact_info.id + "/",
                 {
                     method: "DELETE",
                     headers: {
@@ -178,9 +231,12 @@
                         "X-CSRFToken": csrf
                     },
                 }).then(response => response.json())
+            if (response.status === 200 && response.redirected) {
+                window.location.assign(response.url)
+            }
             document.getElementById("infoMessage").innerHTML = response.message
             document.getElementById("infoModal").showModal();
-        }catch (err){
+        } catch (err) {
             document.getElementById("infoMessage").innerHTML = err
             console.log(err)
             document.getElementsByClassName("loading")[0].classList.add("hidden");
@@ -189,9 +245,9 @@
         }
         document.getElementsByClassName("loading")[0].classList.add("hidden");
         document.getElementById("contactModalDelete").close();
-        contacts.splice(contacts.findIndex(contact => contact["pk"] === contact_info.id),1)
+        contacts.splice(contacts.findIndex(contact => contact["pk"] === contact_info.id), 1)
         contact_info = {
-            id:0,
+            id: 0,
             name: "",
             surname: "",
             email: "",
@@ -206,6 +262,11 @@
         contacts.sort((a, b) => (a['fields'][type]>b['fields'][type]) ? 1 * by : ((a['fields'][type]<b['fields'][type]) ? -1 * by : 0))
         contacts = contacts
     }
+
+    function openUploadContactModal(){
+        document.getElementById("uploadData").showModal();
+    }
+
 </script>
 
 {#snippet contact(contact_info, contact_id)}
@@ -297,6 +358,13 @@
     <header class="header px-0 z-50">
         <div class="container">
             <div class="header-content flex items-center justify-end p-4">
+                <button class="btn btn-primary btn-soft w-fit h-10" id="uploadContactBtn" onclick={()=> openUploadContactModal()}>
+                    <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="inline">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Upload contacts
+                </button>
                 <div class="dropdown">
                     <div tabindex="0" role="button" class="btn btn-soft btn-info btn-ghost rounded-field">Sort by</div>
                     <ul class="menu dropdown-content bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
@@ -520,3 +588,18 @@
     </div>
 
 </dialog>
+
+<UppyContextProvider {uppy}>
+    <dialog class="modal" id="uploadData">
+
+        <div class="modal-box">
+            <form method="dialog">
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            </form>
+            <h3 class="text-lg font-bold">Upload contacts</h3>
+            <div id="uploader"></div>
+        </div>
+
+    </dialog>
+</UppyContextProvider>
+

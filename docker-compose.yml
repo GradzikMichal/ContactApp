@@ -48,7 +48,6 @@ services:
       - .env
     volumes:
       - static_volume:/app/staticfiles
-      - ./backend/contacts:/app/contacts
     networks:
       - django_postgres
       - frontend
@@ -64,8 +63,7 @@ services:
     networks:
       - frontend
     volumes:
-      - ./frontend/src:/frontend/src
-      - ./frontend/public:/frontend/public
+      - static_volume:/app/staticfiles
 
 volumes:
   static_volume:
