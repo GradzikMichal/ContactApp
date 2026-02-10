@@ -11,11 +11,17 @@
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^6.2.1",
     "svelte": "^5.43.8",
+    "svelte5-router": "^3.0.2",
     "vite": "^7.2.4",
-    "svelte5-router": "^3.0.2"
+    "@uppy/dashboard": "^5.1.1",
+    "@uppy/svelte": "^5.2.0",
+    "@uppy/xhr-upload": "^5.1.1"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
+    "@uppy/dashboard": "^5.1.1",
+    "@uppy/svelte": "^5.2.0",
+    "@uppy/xhr-upload": "^5.1.1",
     "daisyui": "^5.5.18",
     "tailwindcss": "^4.1.18"
   }
