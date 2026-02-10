@@ -7,6 +7,7 @@ services:
       - "8080:8080"
     depends_on:
       - backend
+      - frontend
     networks:
       - frontend
 
@@ -47,9 +48,24 @@ services:
       - .env
     volumes:
       - static_volume:/app/staticfiles
+      - ./backend/contacts:/app/contacts
     networks:
       - django_postgres
       - frontend
+
+  frontend:
+    container_name: FRONTEND
+    build: frontend/.
+    expose:
+      - 5173
+      - 8000
+    environment:
+      HOST: "0.0.0.0"
+    networks:
+      - frontend
+    volumes:
+      - ./frontend/src:/frontend/src
+      - ./frontend/public:/frontend/public
 
 volumes:
   static_volume:

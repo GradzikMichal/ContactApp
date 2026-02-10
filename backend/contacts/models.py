@@ -32,6 +32,11 @@ class ContactStatusChoices(models.Model):
         """
         return self.name
 
+    def natural_key(self):
+        return {
+            "name": self.name,
+        }
+
 
 class CityLocationWeather(models.Model):
     """
@@ -60,6 +65,14 @@ class CityLocationWeather(models.Model):
         :rtype: str
         """
         return self.name
+
+    def natural_key(self):
+        return {
+            "name": self.name,
+            "temperature": self.temperature,
+            "humidity": self.humidity,
+            "wind_speed": self.wind_speed,
+        }
 
     def _get_coordinates(self) -> (float, float):
         query = {
@@ -138,3 +151,15 @@ class Contact(models.Model):
             :rtype: str
         """
         return self.name + " " + self.surname
+
+    def update_contact(self, update_data):
+        self.name = update_data.get("name")
+        self.surname = update_data.get("surname")
+        self.phone = update_data.get("phone")
+        self.email = update_data.get("email")
+        self.status = ContactStatusChoices.objects.get(name=update_data.get("status"))
+        if not CityLocationWeather.objects.filter(name=update_data["city"]).exists():
+            CityLocationWeather.objects.create(
+                name=update_data["city"],
+            )
+        self.city = CityLocationWeather.objects.get(name=update_data["city"])
