@@ -13,7 +13,8 @@ def user_login(request):
     For POST method view checks if user with given credentials exists and if exist redirects to contacts page.
     """
     if request.method == "GET":
-        return JsonResponse({"csrf": django.middleware.csrf.get_token(request)})
+        csrf = django.middleware.csrf.get_token(request)
+        return JsonResponse({"csrf": csrf})
     elif request.method == "POST":
         username = request.POST['username']
         password = request.POST['password']

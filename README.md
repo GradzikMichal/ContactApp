@@ -9,8 +9,9 @@ I know that .env file should not be commited but for purpose of task I allowed m
  2. Clone my code.
  3. Run docker-compose.yml which is located in main folder.
  4. After this you should be able to visit this [page](localhost:8080) for Contact management or [this](http://localhost:8080/admin/) for Admin page.
- 5. To log in to the admin panel, use the username 'ADMIN' and the password '0YcoB0LIGE<v!ElQ3_&T'. This information is also in the .env file. Once logged in, you can create a user who can log in to the contact page.
- 6. After Contact management page loads, clicking *Contacts* in upper left corner should redirect to the login page.
+ 5. To log in to the admin panel or Contact management page, use the username 'ADMIN' and the password '0YcoB0LIGE<v!ElQ3_&T'. This information is also in the .env file. Once logged in into admin page, you can create a user who can log in to the contact page or a contact on Contact management page.
+ 6. **IMPORTANT** There might be an issue with csrf token, to solve it just go back and try logging in again. I will try solving it.
+ 7. After Contact management page loads, clicking *Contacts* in upper left corner should redirect to the login page. Provide 
 
 ## What have I used?
 I used:
