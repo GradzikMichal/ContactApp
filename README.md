@@ -2,14 +2,15 @@
 
 Hi! I'm Michał and this is my code for Contact management page.
 In my opinion, this code is not fully finished - I would like to add some statistics and exporting to csv.
-
+I know that .env file should not be commited but for purpose of task I allowed myself commiting it.
 ## How to run the application
 
  1. Install [Docker](https://docs.docker.com/desktop/) (I have used Docker Desktop).
  2. Clone my code.
  3. Run docker-compose.yml which is located in main folder.
  4. After this you should be able to visit this [page](localhost:8080) for Contact management or [this](http://localhost:8080/admin/) for Admin page.
- 5. After Contact management page loads, clicking *Contacts* in upper left corner should redirect to the login page.
+ 5. To log in to the admin panel, use the username 'ADMIN' and the password '0YcoB0LIGE<v!ElQ3_&T'. This information is also in the .env file. Once logged in, you can create a user who can log in to the contact page.
+ 6. After Contact management page loads, clicking *Contacts* in upper left corner should redirect to the login page.
 
 ## What have I used?
 I used:
